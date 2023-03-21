@@ -50,7 +50,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   TWEEN.update();
-  planets.forEach((p) => (p.rotation.y += 0.01));
+  planets.forEach((p) => (p.rotation.y += 0.001));
   renderer.render(scene, camera);
 }
 

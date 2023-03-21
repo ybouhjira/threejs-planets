@@ -12,7 +12,7 @@ export function lookAtPlanet(
     .to(
       new Vector3().addVectors(
         planet.position,
-        new Vector3(0, planetRadius * 3, planetRadius * 3)
+        new Vector3(0, 0, planetRadius * 3)
       ),
       1000
     )

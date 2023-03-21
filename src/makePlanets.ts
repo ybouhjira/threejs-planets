@@ -1,7 +1,7 @@
 import { Mesh, ShaderMaterial, SphereGeometry, TextureLoader } from "three";
 
-import vertexShader from "./shaders/vertex.glsl";
-import fragmentShader from "./shaders/fragment.glsl";
+import vertexShader from "./shaders/glow/vertex.glsl";
+import fragmentShader from "./shaders/glow/fragment.glsl";
 
 export function makePlanets() {
   const radii = {
