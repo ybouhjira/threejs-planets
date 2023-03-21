@@ -1,12 +1,9 @@
-import { AmbientLight, AxesHelper, Scene, WebGL1Renderer } from "three";
-import { makeCube } from "./makeCube";
+import { AmbientLight, Scene, WebGL1Renderer } from "three";
 import { makeCamera } from "./makeCamera";
-import { makeLight } from "./makeLight";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { makePlanets } from "./makePlanets";
-import { makeDragControls } from "./makeDragControls";
 import { GUI } from "dat.gui";
 import * as TWEEN from "@tweenjs/tween.js";
+import { lookAtPlanet } from "./lookAtPlanet";
 
 const scene = new Scene();
 const renderer = new WebGL1Renderer({
@@ -25,6 +22,7 @@ const namesOfSolarSystemPlanets = [
   "Saturn",
   "Uranus",
   "Neptune",
+  "Sun",
 ];
 
 const gui = new GUI({ width: 300 });
@@ -35,24 +33,7 @@ namesOfSolarSystemPlanets.forEach((name) => {
       [name]: () => {
         const planet = scene.getObjectByName(name.toLowerCase());
 
-        const planetRadius = planet.geometry.parameters.radius;
-
-        new TWEEN.Tween(camera.position)
-          .to(
-            {
-              x: planet.position.x,
-              y: planet.position.y + planetRadius * 3,
-              z: planet.position.z + planetRadius * 3,
-            },
-            500
-          )
-          .onUpdate((object) => {
-            camera.position.x = object.x;
-            camera.position.y = object.y;
-            camera.position.z = -object.z;
-            camera.lookAt(planet.position);
-          })
-          .start();
+        lookAtPlanet(planet, camera);
       },
     },
     name
@@ -62,10 +43,8 @@ namesOfSolarSystemPlanets.forEach((name) => {
 const camera = makeCamera();
 const ambientLight = new AmbientLight(0xffffff, 0.5);
 const planets = makePlanets();
-const light = makeLight();
-const axesHelper = new AxesHelper(1000);
 
-scene.add(camera, ambientLight, light, ...planets, axesHelper);
+scene.add(camera, ambientLight, ...planets);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -77,11 +56,13 @@ function animate() {
 
 animate();
 
+lookAtPlanet(scene.getObjectByName("mercury"), camera);
 function onWindowResize() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
 
   camera.updateProjectionMatrix();
 }
+onWindowResize();
 
 window.addEventListener("resize", onWindowResize, false);

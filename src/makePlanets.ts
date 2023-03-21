@@ -1,12 +1,11 @@
-import {
-  Mesh,
-  MeshStandardMaterial,
-  SphereGeometry,
-  TextureLoader,
-} from "three";
+import { Mesh, ShaderMaterial, SphereGeometry, TextureLoader } from "three";
+
+import vertexShader from "./shaders/vertex.glsl";
+import fragmentShader from "./shaders/fragment.glsl";
 
 export function makePlanets() {
   const radii = {
+    sun: 24,
     mercury: 2.4397,
     venus: 6.0518,
     earth: 6.3781,
@@ -18,6 +17,10 @@ export function makePlanets() {
   };
 
   const planets = {
+    sun: {
+      radius: radii.sun,
+      texture: new URL("./textures/2k_sun.jpg", import.meta.url),
+    },
     mercury: {
       radius: radii.mercury,
       texture: new URL("./textures/2k_mercury.jpg", import.meta.url),
@@ -54,19 +57,23 @@ export function makePlanets() {
   };
 
   let position = 0;
-  return Object.entries(planets)
-    .sort(([{ radius: r1 }], [{ radius: r2 }]) => r1 - r2)
-    .map(([planet, { radius, texture }], i) => {
-      const mesh = new Mesh(
-        new SphereGeometry(radius, 32, 32),
-        new MeshStandardMaterial({
-          map: new TextureLoader().load(texture),
-        })
-      );
-      mesh.name = planet;
-      mesh.position.set(radius + position, 0, 0);
-      position += radius * 2 + 10;
-      mesh.castShadow = true;
-      return mesh;
-    });
+  return Object.entries(planets).map(([planet, { radius, texture }]) => {
+    const mesh = new Mesh(
+      new SphereGeometry(radius, 64, 64),
+      new ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+          globeTexture: { value: new TextureLoader().load(texture) },
+        },
+      })
+    );
+
+    console.log(mesh.geometry.attributes.normal);
+    mesh.name = planet;
+    mesh.position.set(position, 0, 0);
+    position += radius * 2 + 100;
+    mesh.castShadow = true;
+    return mesh;
+  });
 }
