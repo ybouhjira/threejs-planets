@@ -1,4 +1,4 @@
-import { AmbientLight, Scene, WebGL1Renderer } from "three";
+import { AmbientLight, AxesHelper, Scene, WebGL1Renderer } from "three";
 import { makeCube } from "./makeCube";
 import { makeCamera } from "./makeCamera";
 import { makeLight } from "./makeLight";
@@ -10,7 +10,7 @@ import * as TWEEN from "@tweenjs/tween.js";
 
 const scene = new Scene();
 const renderer = new WebGL1Renderer({
-  antialias: true
+  antialias: true,
 });
 renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -24,7 +24,7 @@ const namesOfSolarSystemPlanets = [
   "Jupiter",
   "Saturn",
   "Uranus",
-  "Neptune"
+  "Neptune",
 ];
 
 const gui = new GUI({ width: 300 });
@@ -38,36 +38,40 @@ namesOfSolarSystemPlanets.forEach((name) => {
         const planetRadius = planet.geometry.parameters.radius;
 
         new TWEEN.Tween(camera.position)
-          .to({
-            x: planet.position.x,
-          }, 2000)
+          .to(
+            {
+              x: planet.position.x,
+              y: planet.position.y + planetRadius * 3,
+              z: planet.position.z + planetRadius * 3,
+            },
+            500
+          )
           .onUpdate((object) => {
-            camera.position.x = object.x
+            camera.position.x = object.x;
+            camera.position.y = object.y;
+            camera.position.z = -object.z;
+            camera.lookAt(planet.position);
           })
           .start();
-      }
+      },
     },
     name
   );
 });
 
-
 const camera = makeCamera();
 const ambientLight = new AmbientLight(0xffffff, 0.5);
-const cube = makeCube();
 const planets = makePlanets();
 const light = makeLight();
+const axesHelper = new AxesHelper(1000);
 
-scene.add(camera, cube, ambientLight, light, ...planets);
-
-//const controls = new OrbitControls(camera, renderer.domElement);
-//makeDragControls([cube, ...planets], controls, camera, renderer);
+scene.add(camera, ambientLight, light, ...planets, axesHelper);
 
 function animate() {
   requestAnimationFrame(animate);
 
-  TWEEN.update()
-  cube.rotation.y += 0.01;
+  TWEEN.update();
+  planets.forEach((p) => (p.rotation.y += 0.01));
   renderer.render(scene, camera);
 }
 
