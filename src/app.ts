@@ -6,11 +6,11 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { makePlanets } from "./makePlanets";
 import { makeDragControls } from "./makeDragControls";
 import { GUI } from "dat.gui";
-import { log } from "three/examples/jsm/nodes/shadernode/ShaderNodeBaseElements";
+import * as TWEEN from "@tweenjs/tween.js";
 
 const scene = new Scene();
 const renderer = new WebGL1Renderer({
-  antialias: true,
+  antialias: true
 });
 renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -24,38 +24,33 @@ const namesOfSolarSystemPlanets = [
   "Jupiter",
   "Saturn",
   "Uranus",
-  "Neptune",
+  "Neptune"
 ];
 
 const gui = new GUI({ width: 300 });
 
 namesOfSolarSystemPlanets.forEach((name) => {
-  // panel.add({ [name]: true }, name).onChange((value) => {
-  //   const planet = scene.getObjectByName(name.toLowerCase());
-  //   planet.visible = value;
-  // });
-
-  // add a button that when click moves the camera to the planet
   gui.add(
     {
       [name]: () => {
         const planet = scene.getObjectByName(name.toLowerCase());
 
         const planetRadius = planet.geometry.parameters.radius;
-        console.log(planetRadius);
-        camera.position.set(
-          planet.position.x + 10 + planetRadius,
-          planet.position.y + 10 + planetRadius,
-          planet.position.z + 10 + planetRadius
-        );
-        camera.lookAt(planet.position.x, planet.position.y, planet.position.z);
-      },
+
+        new TWEEN.Tween(camera.position)
+          .to({
+            x: planet.position.x,
+          }, 2000)
+          .onUpdate((object) => {
+            camera.position.x = object.x
+          })
+          .start();
+      }
     },
     name
   );
 });
 
-scene.add(gui);
 
 const camera = makeCamera();
 const ambientLight = new AmbientLight(0xffffff, 0.5);
@@ -65,12 +60,13 @@ const light = makeLight();
 
 scene.add(camera, cube, ambientLight, light, ...planets);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-makeDragControls([cube, ...planets], controls, camera, renderer);
+//const controls = new OrbitControls(camera, renderer.domElement);
+//makeDragControls([cube, ...planets], controls, camera, renderer);
 
 function animate() {
   requestAnimationFrame(animate);
 
+  TWEEN.update()
   cube.rotation.y += 0.01;
   renderer.render(scene, camera);
 }
